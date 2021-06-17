@@ -10,4 +10,3 @@ To run you'll need all of the dependencies of rust-opencv
 - Choose file location/name
 - Choose webcam
 - Choose detection threshold
-- Show timestamp on video
