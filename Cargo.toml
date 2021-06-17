@@ -8,3 +8,4 @@ edition = "2018"
 
 [dependencies]
 opencv = "0.53"
+chrono = "0.4"

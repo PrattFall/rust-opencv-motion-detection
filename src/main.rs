@@ -1,4 +1,7 @@
+use chrono::offset::Utc;
+use chrono::DateTime;
 use opencv::{core, highgui, imgproc, prelude::*, types::VectorOfVectorOfPoint, videoio, Result};
+use std::time::SystemTime;
 
 fn main() -> Result<()> {
     let window = "video capture";
@@ -14,6 +17,7 @@ fn main() -> Result<()> {
     let mut first_frame = true;
     let mut previous_frame = Mat::default();
     let mut frame = Mat::default();
+    let mut frame_diff = 0;
     cam.read(&mut frame)?;
 
     let mut writer = videoio::VideoWriter::new(
@@ -62,8 +66,6 @@ fn main() -> Result<()> {
                     core::Scalar::new(0., 255., 0., 0.),
                 )?;
 
-                highgui::imshow(window, &dilated)?;
-
                 let mut contours = VectorOfVectorOfPoint::new();
 
                 imgproc::find_contours(
@@ -75,9 +77,31 @@ fn main() -> Result<()> {
                 )?;
 
                 if !(contours as VectorOfVectorOfPoint).is_empty() {
+                    let mut timestamped = frame.clone();
+                    let now = SystemTime::now();
+                    let nowdate: DateTime<Utc> = now.into();
+
+                    imgproc::put_text(
+                        &mut timestamped,
+                        &*format!(
+                            "{} | Frame Diff: {}",
+                            nowdate.format("%d/%m/%Y %T"),
+                            frame_diff
+                        ),
+                        core::Point::new(5, 30),
+                        imgproc::FONT_HERSHEY_DUPLEX,
+                        0.75,
+                        core::Scalar::new(255., 255., 255., 255.),
+                        1,
+                        1,
+                        false,
+                    )?;
+
                     // Keep track of changes
                     previous_frame = blurred.clone();
-                    writer.write(&frame)?;
+                    writer.write(&timestamped)?;
+                    highgui::imshow(window, &timestamped)?;
+                    frame_diff = 0;
                 }
             }
 
@@ -86,6 +110,8 @@ fn main() -> Result<()> {
                 previous_frame = blurred.clone();
                 first_frame = false;
             }
+
+            frame_diff = frame_diff + 1;
         }
 
         // Stop on keypress
