@@ -54,22 +54,22 @@ fn main() -> Result<()> {
                 let mut thresh = Mat::default();
                 imgproc::threshold(&diff, &mut thresh, 10_f64, 255_f64, imgproc::THRESH_BINARY)?;
 
-                let mut dilated = Mat::default();
+                // let mut dilated = Mat::default();
                 //dilate(img_bw, img_final, Mat(), Point(-1, -1), 2, 1, 1);
-                imgproc::dilate(
-                    &thresh,
-                    &mut dilated,
-                    &Mat::default(),
-                    core::Point::new(-1, -1),
-                    2,
-                    1,
-                    core::Scalar::new(0., 255., 0., 0.),
-                )?;
+                // imgproc::dilate(
+                //     &thresh,
+                //     &mut dilated,
+                //     &Mat::default(),
+                //     core::Point::new(-1, -1),
+                //     2,
+                //     1,
+                //     core::Scalar::new(0., 255., 0., 0.),
+                // )?;
 
                 let mut contours = VectorOfVectorOfPoint::new();
 
                 imgproc::find_contours(
-                    &dilated,
+                    &thresh,
                     &mut contours,
                     imgproc::RETR_EXTERNAL,
                     imgproc::CHAIN_APPROX_SIMPLE,
