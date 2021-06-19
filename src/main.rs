@@ -2,7 +2,7 @@ extern crate clap;
 
 use chrono::offset::Utc;
 use chrono::DateTime;
-use clap::{App, Arg, SubCommand};
+use clap::{App, Arg};
 use opencv::{core, highgui, imgproc, prelude::*, types::VectorOfVectorOfPoint, videoio, Result};
 use std::time::SystemTime;
 
@@ -56,9 +56,6 @@ fn main() -> Result<()> {
              .takes_value(true))
         .get_matches();
 
-    let window = "video capture";
-    highgui::named_window(window, highgui::WINDOW_AUTOSIZE)?;
-
     let webcam_id = matches
         .value_of("webcam")
         .unwrap_or("0")
@@ -66,6 +63,17 @@ fn main() -> Result<()> {
         .expect(
         "The given webcam id must be an integer less than the number of webcams you have connected",
     );
+
+    let file_location = matches.value_of("filename").unwrap_or("./test.avi");
+
+    let threshold = matches
+        .value_of("threshold")
+        .unwrap_or("10")
+        .parse::<f64>()
+        .expect("The threshold given must be a floating point number");
+
+    let window = "video capture";
+    highgui::named_window(window, highgui::WINDOW_AUTOSIZE)?;
 
     let mut cam = videoio::VideoCapture::new(webcam_id, videoio::CAP_ANY)?;
     let opened = videoio::VideoCapture::is_opened(&cam)?;
@@ -79,8 +87,6 @@ fn main() -> Result<()> {
     let mut frame = Mat::default();
     let mut frame_diff = 0;
     cam.read(&mut frame)?;
-
-    let file_location = matches.value_of("filename").unwrap_or("./test.avi");
 
     let mut writer = videoio::VideoWriter::new(
         file_location,
@@ -113,12 +119,6 @@ fn main() -> Result<()> {
             if previous_frame.size()?.width > 0 {
                 let mut diff = Mat::default();
                 core::absdiff(&blurred, &previous_frame, &mut diff)?;
-
-                let threshold = matches
-                    .value_of("threshold")
-                    .unwrap_or("10")
-                    .parse::<f64>()
-                    .expect("The threshold given must be a floating point number");
 
                 let mut thresh = Mat::default();
                 imgproc::threshold(
